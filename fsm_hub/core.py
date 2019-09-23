@@ -4,23 +4,29 @@ from datetime import datetime, timedelta
 from pony import orm
 from .entities import Fsm, db
 
+try:
+    from loguru import logger
+    log = logger.info
+except ImportError:
+    log = print
 
-prefix_locked = "locked-"
+prefix_locked = ".locked-"
 
 
 class NotFound(Warning): pass
 class NotAllowed(Warning): pass
 
 
-@orm.db_session
 def new(state, data={}):
-    Fsm(state=state, data=data)
+    with orm.db_session:
+        i = Fsm(state=state, data=data)
+    log(f"new {state} {i.id}")
 
 
 @orm.db_session
 def lock(state):
     if state.startswith(prefix_locked):
-        raise NotAllowed(f"prefix '{prefix_locked}' is not allowed")
+        raise NotAllowed(f"'{prefix_locked}*' is not allowed")
     ts = datetime.now() - timedelta(seconds=300)
     i = orm.select(
         i for i in Fsm if i.ts > ts and i.state == state
@@ -30,6 +36,8 @@ def lock(state):
     prev_info = i.to_dict()
     i.state = f"{prefix_locked}{i.state}"
     i.ts = datetime.now()
+    delta = (i.ts - prev_info["ts"]).total_seconds()
+    log(f"lock {state} {i.id} {delta}")
     return prev_info
 
 
@@ -40,10 +48,13 @@ def transit(id, state, data_patch=None):
         raise NotFound(id)
     if not i.state.startswith(prefix_locked):
         raise NotAllowed(i.state, state)
+    prev_state, prev_ts = i.state, i.ts
     i.state = state
     i.ts = datetime.now()
     if data_patch:
         i.data.update(data_patch)
+    delta = (i.ts - prev_ts).total_seconds()
+    log(f"transit {state} {i.id} {delta} {prev_state}")
 
 
 def _init_this():
