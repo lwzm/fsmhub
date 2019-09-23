@@ -1,0 +1,5 @@
+provider: sqlite
+filename: ".db"
+
+#provider: postgres
+#user: 
