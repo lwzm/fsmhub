@@ -4,7 +4,7 @@ import json
 
 from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTP_CREATED
 
-from .core import new, lock, transit, NotFound, NotAllowed
+from .core import new, lock, transit, info, NotFound, NotAllowed
 
 
 class InitNew:
@@ -33,13 +33,23 @@ class TransitLocked:
         except NotFound:
             raise HTTPNotFound
         except NotAllowed as e:
-            raise HTTPForbidden(description=e.args)
+            raise HTTPForbidden(description=" -> ".join(e.args))
+
+
+class Info:
+    def on_get(self, req: Request, resp: Response, id):
+        try:
+            item = info(id)
+        except NotFound:
+            raise HTTPNotFound
+        resp.body = json.dumps(item, default=str, ensure_ascii=False)
 
 
 application = API()
 application.add_route('/new/{state}', InitNew())
 application.add_route('/lock/{state}', LockOne())
 application.add_route('/transit/{id:int}/{state}', TransitLocked())
+application.add_route('/{id:int}', Info())
 
 
 def main():

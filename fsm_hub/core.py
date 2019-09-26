@@ -57,6 +57,14 @@ def transit(id, state, data_patch=None):
     log(f"transit {state} {i.id} {delta} {prev_state}")
 
 
+@orm.db_session
+def info(id):
+    try:
+        return Fsm[id].to_dict()
+    except orm.ObjectNotFound:
+        raise NotFound(id)
+
+
 def _init_this():
     #orm.sql_debug(True)
     from os.path import abspath
