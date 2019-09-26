@@ -53,13 +53,13 @@ application.add_route('/{id:int}', Info())
 
 
 def main():
-    import os
-    import bjoern
-    bjoern.run(
+    from os import environ
+    from wsgiref.simple_server import make_server
+    make_server(
+        environ.get("HOST", ""),
+        int(environ.get("PORT", 1024)),
         application,
-        os.environ.get("HOST", ""),
-        int(os.environ.get("PORT", 1024)),
-    )
+    ).serve_forever()
 
 
 if __name__ == '__main__':
