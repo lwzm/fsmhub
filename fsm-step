@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""
+load custom outer module and call the function *main*
+
+main should return
+    `a string represents next_state`
+OR
+    `a tuple represents (next_state, patch_data)`
+"""
+
+import importlib
+import os
+import sys
+import time
+import traceback
+
+import click
+import requests
+
+
+_sentry_dsn = os.environ.get("SENTRY_DSN")
+if _sentry_dsn:
+    try:
+        import sentry_sdk
+        sentry_sdk.init(dsn=_sentry_dsn)
+    except ImportError:
+        sentry_sdk = None
+        print("warning: *sentry-sdk* is not installed", file=sys.stderr)
+
+
+# custom hub via $PWD/.fsm-hub
+hub = "http://localhost:1024"
+try:
+    hub = open(".fsm-hub").read().strip() or hub
+except FileNotFoundError:
+    pass
+
+module_name = sys.argv[1]
+if module_name.endswith(".py"):
+    module_name = module_name[:-3].replace("/", ".")
+
+# you MUST define the function *main*
+that_function = importlib.import_module(module_name).main
+
+http = requests.Session()
+
+
+def call(kwargs: dict):
+    c = that_function.__code__
+    args = [kwargs.pop(c.co_varnames[i], None) for i in range(c.co_argcount)]
+    if len(c.co_varnames) == c.co_argcount:
+        return that_function(*args)
+    return that_function(*args, **kwargs)
+
+
+def main():
+
+    if len(sys.argv) > 2:  # this mode is for fix or debug
+        retry_id = int(sys.argv[2])
+        rsp = http.get(f"{hub}/{retry_id}")
+        rsp.raise_for_status()
+        payload = rsp.json()
+        print(payload)
+        kwargs = payload["data"] or {}
+        result = call(kwargs)
+        return
+
+    # loop
+    delay = 1
+
+    while True:
+        rsp = http.post(f"{hub}/lock/{module_name}")
+        if rsp.status_code >= 400:  # do not raise_for_status, just continue
+            time.sleep(delay)
+            if delay < 15:
+                delay += 1
+                print(f"will sleep {delay} in next time", file=sys.stderr)
+            continue
+
+        delay = 1
+        payload = rsp.json()
+        id = payload["id"]
+        #ts = payload["ts"]
+        kwargs = payload["data"] or {}
+        assert payload["state"] == module_name
+
+        try:
+            result = call(kwargs)
+        except Exception as e:
+            traceback.print_exc()
+            sentry_sdk and sentry_sdk.capture_exception(e)
+            continue
+
+        patch_data = None
+        if isinstance(result, str):
+            next_state = result
+        else:
+            next_state, patch_data = result
+            assert isinstance(patch_data, dict), patch_data
+        rsp = http.post(f"{hub}/transit/{id}/{next_state}", json=patch_data)
+        rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
+
+
+if __name__ == '__main__':
+    main()

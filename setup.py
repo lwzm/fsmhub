@@ -7,14 +7,14 @@ name = "fsm-hub"
 
 setup(
     name=name,
-    version="1.2",
+    version="1.3",
     description="Finite State Machine storage hub",
     author=author,
     author_email="{}@qq.com".format(author),
     url="https://github.com/{}/{}".format(author, name),
     keywords="fsm http web store".split(),
     packages=["fsm_hub"],
-    scripts=[name],
+    scripts=[name, "fsm-step"],
     install_requires="pony falcon".split(),
     classifiers=[
         "Environment :: Console",

@@ -10,7 +10,7 @@ try:
 except ImportError:
     log = print
 
-prefix_locked = ".locked-"
+prefix_locked = "."
 
 
 class NotFound(Warning): pass
