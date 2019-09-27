@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from datetime import datetime
-from pony.orm import Database, Required, Optional, Json, composite_key
+from pony.orm import Database, Required, Optional, Json, composite_index
 
 
 db = Database()
@@ -18,7 +18,7 @@ class Fsm(db.Entity):
     state = Required(str, 80)
     ts = Required(datetime, default=datetime.now)
     data = Optional(Json)
-    composite_key(ts, state)
+    composite_index(ts, state)
 
 
 if __name__ == '__main__':
