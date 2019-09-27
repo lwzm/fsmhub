@@ -12,11 +12,14 @@ import importlib
 import os
 import sys
 import time
-import traceback
 
 import click
 import requests
 
+try:
+    from loguru import logger
+except ImportError:
+    import logging as logger
 
 sentry_sdk = None
 _sentry_dsn = os.environ.get("SENTRY")
@@ -25,7 +28,7 @@ if _sentry_dsn:
         import sentry_sdk
         sentry_sdk.init(dsn=_sentry_dsn)
     except ImportError:
-        print("warning: *sentry-sdk* is not installed", file=sys.stderr)
+        logger.warning("*sentry-sdk* is not installed")
 
 
 # custom hub via $PWD/.fsm-hub
@@ -60,7 +63,7 @@ def main():
         rsp = http.get(f"{hub}/{retry_id}")
         rsp.raise_for_status()
         payload = rsp.json()
-        print(payload)
+        logger.debug(payload)
         kwargs = payload["data"] or {}
         result = call(kwargs)
         return
@@ -74,11 +77,12 @@ def main():
             time.sleep(delay)
             if delay < 15:
                 delay += 1
-                print(f"will sleep {delay} in next time", file=sys.stderr)
+                logger.debug(f"will sleep {delay} in next time", file=sys.stderr)
             continue
 
         delay = 1
         payload = rsp.json()
+        logger.debug(payload)
         id = payload["id"]
         #ts = payload["ts"]
         kwargs = payload["data"] or {}
@@ -87,7 +91,7 @@ def main():
         try:
             result = call(kwargs)
         except Exception as e:
-            traceback.print_exc()
+            logger.exception(f"{module_name}.main")
             sentry_sdk and sentry_sdk.capture_exception(e)
             continue
 
@@ -97,6 +101,8 @@ def main():
         else:
             next_state, patch_data = result
             assert isinstance(patch_data, dict), patch_data
+        logger.debug(next_state)
+        patch_data and logger.debug(patch_data)
         rsp = http.post(f"{hub}/transit/{id}/{next_state}", json=patch_data)
         rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
 
