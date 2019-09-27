@@ -18,13 +18,13 @@ import click
 import requests
 
 
-_sentry_dsn = os.environ.get("SENTRY_DSN")
+sentry_sdk = None
+_sentry_dsn = os.environ.get("SENTRY")
 if _sentry_dsn:
     try:
         import sentry_sdk
         sentry_sdk.init(dsn=_sentry_dsn)
     except ImportError:
-        sentry_sdk = None
         print("warning: *sentry-sdk* is not installed", file=sys.stderr)
 
 
