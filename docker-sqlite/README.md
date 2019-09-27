@@ -2,5 +2,5 @@
 
 ```
 touch db
-docker run -d --name fsm-hub -p 1024:1024 -v $PWD/db:/home/db fsm-hub
+docker run --rm -p 1024:1024 -v $PWD/db:/home/db lwzm/fsm-hub:sqlite
 ```
