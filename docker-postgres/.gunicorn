@@ -19,7 +19,7 @@ def _confirm_db():
             from fsm_hub import core
             break
         except Exception as e:
-            print(e, file=sys.stderr)
+            print(e, file=sys.stderr, flush=True)
             time.sleep(1)
 
 

@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  fsm-hub:
+    image: lwzm/fsm-hub:postgres
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 1024:1024
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:alpine
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./postgres:/var/lib/postgresql/data
