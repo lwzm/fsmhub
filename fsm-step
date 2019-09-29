@@ -89,8 +89,11 @@ if _redis:
         while True:
             i = next(_generator)
             if i["type"] == "message":
-                token = i["data"]
                 # simulate lock
+                id = i['data']
+                if isinstance(id, bytes):
+                    id = id.decode()
+                token = f"{id}:{module_name}"
                 if _redis.setnx(token, os.getpid()):
                     _redis.expire(token, 600)
                     break
