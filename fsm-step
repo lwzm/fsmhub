@@ -83,9 +83,10 @@ def transit(id, result):
 
 if _redis:
     _pubsub = _redis.pubsub()
-    _pubsub.subscribe(f"state:{module_name}")
     _generator = _pubsub.listen()
     def have_a_rest():
+        channel = f"state:{module_name}"
+        _pubsub.subscribe(channel)
         while True:
             i = next(_generator)
             if i["type"] == "message":
@@ -97,6 +98,7 @@ if _redis:
                 if _redis.setnx(token, os.getpid()):
                     _redis.expire(token, 600)
                     break
+        _pubsub.unsubscribe(channel)
 else:
     def have_a_rest():
         time.sleep(3)
