@@ -96,7 +96,7 @@ if _redis:
                     id = id.decode()
                 token = f"{id}:{module_name}"
                 if _redis.setnx(token, os.getpid()):
-                    _redis.expire(token, 600)
+                    _redis.expire(token, 60)
                     break
         _pubsub.unsubscribe(channel)
 else:
