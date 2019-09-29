@@ -91,8 +91,8 @@ if _redis:
             if i["type"] == "message":
                 token = i["data"]
                 # simulate lock
-                if _redis.setnx(token, time.time()):
-                    _redis.expire(token, 30)
+                if _redis.setnx(token, os.getpid()):
+                    _redis.expire(token, 600)
                     break
 else:
     def have_a_rest():
@@ -135,7 +135,6 @@ def main():
             continue
 
         transit(id, result)
-        have_a_rest()
 
 
 if __name__ == '__main__':
