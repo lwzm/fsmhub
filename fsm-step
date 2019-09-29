@@ -35,6 +35,12 @@ if _sentry_dsn:
     except ImportError:
         logger.warning("*sentry-sdk* is not installed")
 
+_redis = None
+_redis_url = os.environ.get("REDIS")
+if _redis_url:
+    from redis import Redis
+    _redis = Redis.from_url(_redis_url)
+
 
 # custom hub via $PWD/.fsm-hub
 hub = "http://localhost:1024"
@@ -75,8 +81,22 @@ def transit(id, result):
     rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
 
 
-def have_a_rest():
-    time.sleep(3)
+if _redis:
+    _pubsub = _redis.pubsub()
+    _pubsub.subscribe(f"state:{module_name}")
+    _generator = _pubsub.listen()
+    def have_a_rest():
+        while True:
+            i = next(_generator)
+            if i["type"] == "message":
+                token = i["data"]
+                # simulate lock
+                if _redis.setnx(token, time.time()):
+                    _redis.expire(token, 30)
+                    break
+else:
+    def have_a_rest():
+        time.sleep(3)
 
 
 def main():
@@ -115,6 +135,7 @@ def main():
             continue
 
         transit(id, result)
+        have_a_rest()
 
 
 if __name__ == '__main__':

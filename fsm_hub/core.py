@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
+from os import environ
 from pony import orm
 from .entities import Fsm, db
+
 
 try:
     from loguru import logger
@@ -10,17 +12,35 @@ try:
 except ImportError:
     log = print
 
+
+_redis = None
+_redis_url = environ.get("REDIS")
+if _redis_url:
+    from redis import Redis
+    _redis = Redis.from_url(_redis_url)
+
+
 prefix_locked = "."
 
 
-class NotFound(Warning): pass
-class NotAllowed(Warning): pass
+class NotFound(Warning):
+    pass
+
+
+class NotAllowed(Warning):
+    pass
+
+
+def _broadcast(state, id):
+    if _redis:
+         _redis.publish(f"state:{state}", id)
 
 
 def new(state, data={}):
     with orm.db_session:
         i = Fsm(state=state, data=data)
     log(f"new {state} {i.id}")
+    _broadcast(state, i.id)
 
 
 @orm.db_session
@@ -55,6 +75,7 @@ def transit(id, state, data_patch=None):
         i.data.update(data_patch)
     delta = (i.ts - prev_ts).total_seconds()
     log(f"transit {state} {i.id} {delta} {prev_state}")
+    _broadcast(state, i.id)
 
 
 @orm.db_session
