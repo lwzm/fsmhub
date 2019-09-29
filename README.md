@@ -64,4 +64,5 @@ content-type: application/json; charset=UTF-8
 
 ### TODOS
 
-lots.
+* postgres/sqlite trigger for log changes
+* redis pub/sub and setnx for locking

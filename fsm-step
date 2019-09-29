@@ -75,6 +75,10 @@ def transit(id, result):
     rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
 
 
+def have_a_rest():
+    time.sleep(3)
+
+
 def main():
     """
     """
@@ -90,18 +94,12 @@ def main():
         return
 
     # loop mode
-    delay = 1
-
     while True:
         rsp = http.post(f"{hub}/lock/{module_name}")
-        if rsp.status_code >= 400:  # do not raise_for_status, just continue
-            time.sleep(delay)
-            if delay < 15:
-                delay += 1
-                logger.debug(f"will sleep {delay} in next time", file=sys.stderr)
+        if rsp.status_code >= 400:  # do not raise, just rest and continue
+            have_a_rest()
             continue
 
-        delay = 1
         payload = rsp.json()
         logger.debug(payload)
         id = payload["id"]
