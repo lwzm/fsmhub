@@ -35,12 +35,6 @@ if _sentry_dsn:
     except ImportError:
         logger.warning("*sentry-sdk* is not installed")
 
-_redis = None
-_redis_url = os.environ.get("REDIS")
-if _redis_url:
-    from redis import Redis
-    _redis = Redis.from_url(_redis_url)
-
 
 # custom hub via $PWD/.fsm-hub
 hub = "http://localhost:1024"
@@ -81,33 +75,49 @@ def transit(id, result):
     rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
 
 
-if _redis:
+def _generate_have_a_rest():
+    def have_a_rest():
+        time.sleep(3)
+
+    rsp = http.get(f"{hub}/")
+    if rsp.status_code >= 400:
+        logger.warning(rsp)
+        return have_a_rest
+
+    redis_url = rsp.json().get("redis")
+    if not redis_url:
+        return have_a_rest
+
+    from redis import Redis
+
+    _redis = Redis.from_url(redis_url)
+    logger.info(redis_url)
     _pubsub = _redis.pubsub()
     _generator = _pubsub.listen()
-    def have_a_rest():
+
+    def have_a_rest_another():
         channel = f"state:{module_name}"
         _pubsub.subscribe(channel)
         while True:
             i = next(_generator)
-            if i["type"] == "message":
-                # simulate lock
-                id = i['data']
-                if isinstance(id, bytes):
-                    id = id.decode()
-                token = f"{id}:{module_name}"
-                if _redis.setnx(token, os.getpid()):
-                    _redis.expire(token, 60)
-                    break
-        _pubsub.unsubscribe(channel)
-else:
-    def have_a_rest():
-        time.sleep(3)
+            if i["type"] != "message":
+                continue
+            # simulate lock
+            id = i['data']
+            if isinstance(id, bytes):
+                id = id.decode()
+            token = f"{id}:{module_name}"
+            if _redis.setnx(token, os.getpid()):
+                _redis.expire(token, 60)
+                break
+        _pubsub.unsubscribe(channel)  # better
+
+    return have_a_rest_another
 
 
 def main():
     """
     """
-
     if len(sys.argv) > 2:  # this mode is for fix or debug
         retry_id = int(sys.argv[2])
         rsp = http.get(f"{hub}/{retry_id}")
@@ -118,6 +128,7 @@ def main():
         transit(retry_id, result)
         return
 
+    have_a_rest = _generate_have_a_rest()
     # loop mode
     while True:
         rsp = http.post(f"{hub}/lock/{module_name}")

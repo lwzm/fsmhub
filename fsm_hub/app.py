@@ -4,7 +4,14 @@ import json
 
 from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTP_CREATED
 
-from .core import new, lock, transit, info, NotFound, NotAllowed
+from .core import new, lock, transit, info, NotFound, NotAllowed, redis_url
+
+
+class Index:
+    def on_get(self, req: Request, resp: Response):
+        resp.body = json.dumps({
+            "redis": redis_url,
+        })
 
 
 class InitNew:
@@ -46,6 +53,7 @@ class Info:
 
 
 application = API()
+application.add_route('/', Index())
 application.add_route('/new/{state}', InitNew())
 application.add_route('/lock/{state}', LockOne())
 application.add_route('/transit/{id:int}/{state}', TransitLocked())

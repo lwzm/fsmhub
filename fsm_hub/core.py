@@ -14,10 +14,10 @@ except ImportError:
 
 
 _redis = None
-_redis_url = environ.get("REDIS")
-if _redis_url:
+redis_url = environ.get("REDIS")
+if redis_url:
     from redis import Redis
-    _redis = Redis.from_url(_redis_url)
+    _redis = Redis.from_url(redis_url)
 
 
 prefix_locked = "."
