@@ -6,13 +6,6 @@ from pony import orm
 from .entities import Fsm, db
 
 
-try:
-    from loguru import logger
-    log = logger.info
-except ImportError:
-    log = print
-
-
 _redis = None
 redis_url = environ.get("REDIS")
 if redis_url:
@@ -39,7 +32,6 @@ def _broadcast(state, id):
 def new(state, data={}):
     with orm.db_session:
         i = Fsm(state=state, data=data)
-    log(f"new {state} {i.id}")
     _broadcast(state, i.id)
 
 
@@ -56,8 +48,6 @@ def lock(state):
     prev_info = i.to_dict()
     i.state = f"{prefix_locked}{i.state}"
     i.ts = datetime.now()
-    delta = (i.ts - prev_info["ts"]).total_seconds()
-    log(f"lock {state} {i.id} {delta}")
     return prev_info
 
 
@@ -68,13 +58,10 @@ def transit(id, state, data_patch=None):
         raise NotFound(id)
     if not i.state.startswith(prefix_locked):
         raise NotAllowed(i.state, state)
-    prev_state, prev_ts = i.state, i.ts
     i.state = state
     i.ts = datetime.now()
     if data_patch:
         i.data.update(data_patch)
-    delta = (i.ts - prev_ts).total_seconds()
-    log(f"transit {state} {i.id} {delta} {prev_state}")
     _broadcast(state, i.id)
 
 

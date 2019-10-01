@@ -22,5 +22,8 @@ services:
 
   redis:
     image: redis:alpine
+    command:
+      - --save
+      - ''
     volumes:
       - /etc/localtime:/etc/localtime:ro
