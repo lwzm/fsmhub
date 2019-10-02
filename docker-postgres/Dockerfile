@@ -8,4 +8,4 @@ RUN pip install fsm-hub gunicorn loguru psycopg2-binary redis \
 COPY .gunicorn database.yaml ./
 ENV REDIS ""
 EXPOSE 1024
-CMD [ "gunicorn", "-c", ".gunicorn", "fsm_hub" ]
+CMD [ "gunicorn", "-c", ".gunicorn", "fsm_hub.app" ]
