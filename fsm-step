@@ -109,6 +109,8 @@ def main():
         retry_id = int(sys.argv[2])
         payload = cli.get(retry_id)
         logger.debug(payload)
+        state = payload["state"]
+        assert state.endswith(module_name) and state != module_name, state
         result = call(payload["data"] or {})
         transit(retry_id, result)
         return
