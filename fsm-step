@@ -18,8 +18,7 @@ import os
 import sys
 import time
 
-import click
-import requests
+from fsm_hub import cli
 
 try:
     from loguru import logger
@@ -36,13 +35,6 @@ if _sentry_dsn:
         logger.warning("*sentry-sdk* is not installed")
 
 
-# custom hub via $PWD/.fsm-hub
-hub = "http://localhost:1024"
-try:
-    hub = open(".fsm-hub").read().strip() or hub
-except FileNotFoundError:
-    pass
-
 sys.path.append("")
 module_name = sys.argv[1]
 if module_name.endswith(".py"):
@@ -51,10 +43,11 @@ if module_name.endswith(".py"):
 # you MUST define the function *main*
 that_function = importlib.import_module(module_name).main
 
-http = requests.Session()
 
 
 def call(kwargs: dict):
+    """call logic function, use magic
+    """
     c = that_function.__code__
     args = [kwargs.pop(c.co_varnames[i], None) for i in range(c.co_argcount)]
     if len(c.co_varnames) == c.co_argcount:
@@ -71,20 +64,14 @@ def transit(id, result):
         assert isinstance(patch_data, dict), patch_data
     logger.debug(next_state)
     patch_data and logger.debug(patch_data)
-    rsp = http.post(f"{hub}/transit/{id}/{next_state}", json=patch_data)
-    rsp.raise_for_status()  # hub is gone or logic is broken, so just exit
+    cli.transit(id, next_state, patch_data)
 
 
-def _generate_have_a_rest():
+def _generate_function_have_a_rest():
     def have_a_rest():
         time.sleep(3)
 
-    rsp = http.get(f"{hub}/")
-    if rsp.status_code >= 400:
-        logger.warning(rsp)
-        return have_a_rest
-
-    redis_url = rsp.json().get("redis")
+    redis_url = cli.get_config()["redis"]
     if not redis_url:
         return have_a_rest
 
@@ -120,23 +107,19 @@ def main():
     """
     if len(sys.argv) > 2:  # this mode is for fix or debug
         retry_id = int(sys.argv[2])
-        rsp = http.get(f"{hub}/{retry_id}")
-        rsp.raise_for_status()
-        payload = rsp.json()
+        payload = cli.get(retry_id)
         logger.debug(payload)
         result = call(payload["data"] or {})
         transit(retry_id, result)
         return
 
-    have_a_rest = _generate_have_a_rest()
+    have_a_rest = _generate_function_have_a_rest()
     # loop mode
     while True:
-        rsp = http.post(f"{hub}/lock/{module_name}")
-        if rsp.status_code >= 400:  # do not raise, just rest and continue
+        payload = cli.lock(module_name)
+        if not payload:
             have_a_rest()
             continue
-
-        payload = rsp.json()
         logger.debug(payload)
         id = payload["id"]
         #ts = payload["ts"]
