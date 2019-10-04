@@ -14,6 +14,18 @@ services:
       - postgres
       - redis
 
+  postgrest:
+    image: lwzm/postgrest
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      PGRST_DB_URI: postgres://postgres/
+      PGRST_DB_ANON_ROLE: postgres
+    depends_on:
+      - postgres
+    ports:
+      - 3000:3000
+
   postgres:
     image: postgres:alpine
     volumes:
