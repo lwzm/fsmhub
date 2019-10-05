@@ -80,11 +80,11 @@ def _generate_function_have_a_rest():
     logger.info(redis_url)
     _pubsub = _redis.pubsub()
     _generator = _pubsub.listen()
+    _pubsub.subscribe("")  # prevent StopIteration
 
     def have_a_rest_another():
         channel = f"state:{module_name}"
         _pubsub.subscribe(channel)
-        _pubsub.subscribe("")  # prevent StopIteration
         while True:
             i = next(_generator)
             if i["type"] != "message":
