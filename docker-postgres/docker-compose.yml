@@ -2,6 +2,15 @@ version: '3'
 
 services:
 
+  crud:
+    image: lwzm/crud
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - postgrest
+    ports:
+      - 8080:80
+
   fsm-hub:
     image: lwzm/fsm-hub:postgres
     volumes:
@@ -23,8 +32,6 @@ services:
       PGRST_DB_ANON_ROLE: postgres
     depends_on:
       - postgres
-    ports:
-      - 3000:3000
 
   postgres:
     image: postgres:alpine
