@@ -44,7 +44,6 @@ if module_name.endswith(".py"):
 that_function = importlib.import_module(module_name).main
 
 
-
 def call(kwargs: dict):
     """call logic function, use magic
     """
@@ -85,14 +84,14 @@ def _generate_function_have_a_rest():
     def have_a_rest_another():
         channel = f"state:{module_name}"
         _pubsub.subscribe(channel)
+        _pubsub.subscribe("")  # prevent StopIteration
         while True:
             i = next(_generator)
             if i["type"] != "message":
                 continue
+            assert i["channel"].decode() == channel
             # simulate lock
-            id = i['data']
-            if isinstance(id, bytes):
-                id = id.decode()
+            id = i["data"].decode()
             token = f"{id}:{module_name}"
             if _redis.setnx(token, os.getpid()):
                 _redis.expire(token, 60)
