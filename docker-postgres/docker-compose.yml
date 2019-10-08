@@ -15,6 +15,7 @@ services:
     image: lwzm/fsm-hub:postgres
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - ./database.yaml:/home/database.yaml:ro
     environment:
       REDIS: redis://redis
     ports:
