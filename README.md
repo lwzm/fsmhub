@@ -70,3 +70,4 @@ content-type: application/json; charset=UTF-8
 
 * [x] postgres/sqlite trigger for log changes
 * [x] redis pub/sub and setnx for locking
+* [ ] handle signal term
