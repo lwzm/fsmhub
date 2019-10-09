@@ -1,6 +1,6 @@
 # fsm-hub
-Finite State Machine storage hub
 
+Finite State Machine storage hub
 
 ### Install
 ```
@@ -27,7 +27,7 @@ fsm-hub
 
 ### Use it
 
-3 HTTP API:
+3 HTTP APIs:
 
 * `POST /new/<STATE>`, optional json payload for init custom data
 * `POST /lock/<STATE>`
@@ -68,5 +68,5 @@ content-type: application/json; charset=UTF-8
 
 ### TODOS
 
-* postgres/sqlite trigger for log changes
-* redis pub/sub and setnx for locking
+* [x] postgres/sqlite trigger for log changes
+* [x] redis pub/sub and setnx for locking
