@@ -26,7 +26,9 @@ class NotAllowed(Warning):
 
 def _broadcast(state, id):
     if _redis:
-         _redis.publish(f"state:{state}", id)
+        key = f"state:{state}"
+        _redis.delete(key)
+        _redis.rpush(key, id)
 
 
 def new(state, data={}):

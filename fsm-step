@@ -78,25 +78,11 @@ def _generate_function_have_a_rest():
 
     _redis = Redis.from_url(redis_url)
     logger.info(redis_url)
-    _pubsub = _redis.pubsub()
-    _generator = _pubsub.listen()
-    _pubsub.subscribe("")  # prevent StopIteration
+
+    key = f"state:{module_name}"
 
     def have_a_rest_another():
-        channel = f"state:{module_name}"
-        _pubsub.subscribe(channel)
-        while True:
-            i = next(_generator)
-            if i["type"] != "message":
-                continue
-            assert i["channel"].decode() == channel
-            # simulate lock
-            id = i["data"].decode()
-            token = f"{id}:{module_name}"
-            if _redis.setnx(token, os.getpid()):
-                _redis.expire(token, 60)
-                break
-        _pubsub.unsubscribe(channel)  # better
+        _redis.blpop(key)
 
     return have_a_rest_another
 
