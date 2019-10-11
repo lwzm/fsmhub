@@ -6,7 +6,7 @@ import time
 
 
 bind = "0.0.0.0:1024"
-workers = multiprocessing.cpu_count() * 2
+workers = 1  # multiprocessing.cpu_count() * 2
 keepalive = 60
 timeout = 600
 accesslog = '-'
