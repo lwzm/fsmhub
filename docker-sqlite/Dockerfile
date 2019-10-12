@@ -1,8 +1,10 @@
 FROM python:alpine
 
+LABEL maintainer="lwzm@qq.com"
+
 WORKDIR /home/
 
-RUN pip install --no-cache-dir fsm-hub loguru \
+RUN pip install --no-cache-dir fsm-hub \
     && touch db \
     && find /usr/local/lib/ -name __pycache__ | xargs rm -r
 
