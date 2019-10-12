@@ -2,8 +2,8 @@ FROM python:slim-stretch
 
 WORKDIR /home/
 
-RUN pip install fsm-hub gunicorn loguru psycopg2-binary redis \
-    && rm -rf /root/.cache
+RUN pip install --no-cache-dir fsm-hub gunicorn loguru psycopg2-binary redis \
+    && find /usr/local/lib/ -name __pycache__ | xargs rm -r
 
 COPY .gunicorn ./
 ENV REDIS ""
