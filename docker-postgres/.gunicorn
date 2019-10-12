@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import multiprocessing
+import os
 import sys
 import time
 
 
 bind = "0.0.0.0:1024"
-workers = 1  # multiprocessing.cpu_count() * 2
+workers = min(4, multiprocessing.cpu_count()) if os.getppid() else 1
 keepalive = 60
 timeout = 600
 accesslog = '-'
