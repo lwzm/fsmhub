@@ -1,13 +1,16 @@
 FROM python:slim-stretch
 
 LABEL maintainer="lwzm@qq.com"
+ARG bjoern=bjoern-3.0.1-cp37-cp37m-linux_x86_64.whl
 
 WORKDIR /home/
 
-RUN pip install --no-cache-dir fsm-hub gunicorn psycopg2-binary redis \
-    && find /usr/local/lib/ -name __pycache__ | xargs rm -r
+COPY libev.so.4 /usr/lib/x86_64-linux-gnu/libev.so.4
+COPY $bjoern ./
+RUN pip install --no-cache-dir fsm-hub psycopg2-binary redis $bjoern \
+    && rm -f $bjoern \
+    && find /usr/local/lib/ -name '*.pyc' -delete
 
-COPY .gunicorn ./
 ENV REDIS ""
 EXPOSE 1024
-CMD [ "gunicorn", "-c", ".gunicorn", "fsm_hub.app" ]
+CMD [ "fsm-hub" ]

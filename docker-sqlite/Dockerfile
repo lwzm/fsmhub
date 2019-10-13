@@ -6,7 +6,7 @@ WORKDIR /home/
 
 RUN pip install --no-cache-dir fsm-hub \
     && touch db \
-    && find /usr/local/lib/ -name __pycache__ | xargs rm -r
+    && find /usr/local/lib/ -name '*.pyc' -delete
 
 COPY database.yaml ./
 EXPOSE 1024
