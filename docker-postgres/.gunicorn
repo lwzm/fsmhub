@@ -11,7 +11,7 @@ workers = min(4, multiprocessing.cpu_count()) if os.getppid() else 1
 keepalive = 60
 timeout = 600
 accesslog = '-'
-access_log_format = '%(t)s %(h)s "%(r)s" %(s)s %(b)s %(D)s "%(a)s"'
+access_log_format = '%(t)s\t%(h)s\t%(r)s\t%(s)s\t%(b)s\t%(D)s\t%(a)s'
 
 
 def _confirm_db():
