@@ -1,4 +1,4 @@
-FROM python:slim-stretch
+FROM python:3.7-slim-stretch
 
 LABEL maintainer="lwzm@qq.com"
 ARG bjoern=bjoern-3.0.1-cp37-cp37m-linux_x86_64.whl
