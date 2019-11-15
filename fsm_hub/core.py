@@ -24,17 +24,19 @@ class NotAllowed(Warning):
     pass
 
 
-def _broadcast(state, id):
+def _notice(state, id):
     if _redis:
         key = f"state:{state}"
-        _redis.delete(key)
-        _redis.rpush(key, id)
+        pipe = _redis.pipeline()
+        pipe.delete(key)
+        pipe.rpush(key, id)
+        pipe.execute()
 
 
 def new(state, data={}):
     with orm.db_session:
         i = Fsm(state=state, data=data)
-    _broadcast(state, i.id)
+    _notice(state, i.id)
 
 
 @orm.db_session
@@ -64,7 +66,7 @@ def transit(id, state, data_patch=None):
     i.ts = datetime.now()
     if data_patch:
         i.data.update(data_patch)
-    _broadcast(state, i.id)
+    _notice(state, i.id)
 
 
 @orm.db_session

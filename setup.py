@@ -7,7 +7,7 @@ name = "fsm-hub"
 
 setup(
     name=name,
-    version="1.15",
+    version="1.16",
     description="Finite State Machine storage hub",
     author=author,
     author_email="{}@qq.com".format(author),
