@@ -48,5 +48,5 @@ def main():
 if __name__ == '__main__':
     main()
     """
-    ./optional_record_history_postgres.py | psql
+    ./optional_sql.py | docker-compose exec -T postgres psql -U postgres
     """
