@@ -1,0 +1,3 @@
+pragma synchronous = off;
+pragma temp_store = memory;
+pragma journal_mode = memory;
