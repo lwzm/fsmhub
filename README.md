@@ -24,6 +24,11 @@ or
 fsm-hub
 ```
 
+docker
+```
+docker run -p 1024:1024 lwzm/fsm-hub
+```
+
 
 ### Use it
 
@@ -69,5 +74,5 @@ content-type: application/json; charset=UTF-8
 ### TODOS
 
 * [x] postgres/sqlite trigger for log changes
-* [x] redis pub/sub and setnx for locking
-* [ ] handle signal term
+* [x] optional redis notice
+* [ ] docs
