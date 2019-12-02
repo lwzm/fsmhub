@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
+from os import environ
 from requests import Session, codes
 
 
-# custom hub via $PWD/.fsm-hub
-hub = "http://localhost:1024"
-try:
-    hub = open(".fsm-hub").read().strip() or hub
-except FileNotFoundError:
-    pass
-
+hub = environ.get("HUB", "http://localhost:1024")
 http = Session()
 
 
