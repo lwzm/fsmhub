@@ -17,12 +17,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./database.yaml:/home/database.yaml:ro
     environment:
-      REDIS: redis://redis
+      NOTICE: http://notice/fsm/
     ports:
       - 1024:1024
     depends_on:
       - postgres
-      - redis
+      - notice
 
   postgrest:
     image: lwzm/postgrest
@@ -40,10 +40,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./postgres:/var/lib/postgresql/data
 
-  redis:
-    image: redis:alpine
-    command:
-      - --save
-      - ''
+  notice:
+    image: lwzm/notice
     volumes:
       - /etc/localtime:/etc/localtime:ro

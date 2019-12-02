@@ -70,19 +70,15 @@ def _generate_function_have_a_rest():
     def have_a_rest():
         time.sleep(3)
 
-    redis_url = cli.get_config()["redis"]
-    if not redis_url:
+    base = cli.get_config()["notice"]
+    if not base:
         return have_a_rest
 
-    from redis import Redis
-
-    _redis = Redis.from_url(redis_url)
-    logger.info(redis_url)
-
-    key = f"state:{module_name}"
+    notice_url = f"{base}{module_name}"
+    logger.info(notice_url)
 
     def have_a_rest_another():
-        _redis.blpop(key)
+        cli.http.get(notice_url)
 
     return have_a_rest_another
 

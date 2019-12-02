@@ -4,13 +4,13 @@ import json
 
 from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTP_CREATED
 
-from .core import new, lock, transit, info, NotFound, NotAllowed, redis_url
+from .core import new, lock, transit, info, NotFound, NotAllowed, notice_base_url
 
 
 class Index:
     def on_get(self, req: Request, resp: Response):
         resp.body = json.dumps({
-            "redis": redis_url,
+            "notice": notice_base_url,
         })
 
 

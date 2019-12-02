@@ -3,16 +3,12 @@
 from datetime import datetime, timedelta
 from os import environ
 from pony import orm
+from requests import Session
 from .entities import Fsm, db
 
 
-_redis = None
-redis_url = environ.get("REDIS")
-if redis_url:
-    from redis import Redis
-    _redis = Redis.from_url(redis_url)
-
-
+notice_base_url = environ.get("NOTICE")
+_http = Session()
 prefix_locked = "."
 
 
@@ -25,12 +21,8 @@ class NotAllowed(Warning):
 
 
 def _notice(state, id):
-    if _redis:
-        key = f"state:{state}"
-        pipe = _redis.pipeline()
-        pipe.delete(key)
-        pipe.rpush(key, id)
-        pipe.execute()
+    if notice_base_url:
+        _http.post(notice_base_url + state, data=str(id))
 
 
 def new(state, data={}):

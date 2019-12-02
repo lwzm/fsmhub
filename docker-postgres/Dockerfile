@@ -13,11 +13,11 @@ FROM alpine
 COPY --from=base /tmp/pip .
 
 RUN apk add --no-cache libev libpq python3 \
-    && pip3 install --no-cache-dir  *.whl redis fsm-hub \
+    && pip3 install --no-cache-dir  *.whl fsm-hub \
     && rm *.whl \
     && find /usr/lib/ -name '*.pyc' -delete
 
 WORKDIR /home/
-ENV REDIS ""
+ENV NOTICE ""
 EXPOSE 1024
 CMD [ "fsm-hub" ]
