@@ -8,8 +8,8 @@ from .entities import Fsm, db
 
 
 notice_base_url = environ.get("NOTICE")
-_http = Session()
 prefix_locked = "."
+_http = Session()
 
 
 class NotFound(Warning):
@@ -22,7 +22,7 @@ class NotAllowed(Warning):
 
 def _notice(state, id):
     if notice_base_url:
-        _http.post(notice_base_url + state, data=str(id))
+        _http.post(notice_base_url + state, json=id)
 
 
 def new(state, data={}):

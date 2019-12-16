@@ -70,7 +70,7 @@ def _generate_function_have_a_rest():
     def have_a_rest():
         time.sleep(3)
 
-    base = cli.get_config()["notice"]
+    base = os.environ.get("NOTICE") or cli.get_config().get("notice")
     if not base:
         return have_a_rest
 
