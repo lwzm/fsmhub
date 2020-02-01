@@ -11,5 +11,7 @@ RUN apk add --no-cache python3 \
 
 COPY database.yaml .sqliterc ./
 
-EXPOSE 1024
+ENV PORT=80
+EXPOSE 80
+
 CMD [ "fsm-hub" ]

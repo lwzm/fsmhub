@@ -18,6 +18,7 @@ RUN apk add --no-cache libev libpq python3 \
     && find /usr/lib/ -name '*.pyc' -delete
 
 WORKDIR /home/
-ENV NOTICE ""
-EXPOSE 1024
+ENV NOTICE="" PORT=80
+EXPOSE 80
+
 CMD [ "fsm-hub" ]

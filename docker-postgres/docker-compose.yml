@@ -19,7 +19,7 @@ services:
     environment:
       NOTICE: http://notice/fsm/
     ports:
-      - 1024:1024
+      - 1024:80
     depends_on:
       - postgres
       - notice
