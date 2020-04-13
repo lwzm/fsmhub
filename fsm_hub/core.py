@@ -3,13 +3,10 @@
 from datetime import datetime, timedelta
 from os import environ
 from pony import orm
-from requests import Session
 from .entities import Fsm, db
 
 
-notice_base_url = environ.get("NOTICE")
 prefix_locked = "."
-_http = Session()
 
 
 class NotFound(Warning):
@@ -20,15 +17,10 @@ class NotAllowed(Warning):
     pass
 
 
-def _notice(state, id):
-    if notice_base_url:
-        _http.post(notice_base_url + state, json=id)
-
-
 def new(state, data={}):
     with orm.db_session:
         i = Fsm(state=state, data=data)
-    _notice(state, i.id)
+    return i.id
 
 
 @orm.db_session
@@ -58,7 +50,6 @@ def transit(id, state, data_patch=None):
     i.ts = datetime.now()
     if data_patch:
         i.data.update(data_patch)
-    _notice(state, i.id)
 
 
 @orm.db_session
@@ -70,7 +61,7 @@ def info(id):
 
 
 def _init_this():
-    #orm.sql_debug(True)
+    # orm.sql_debug(True)
     from os.path import abspath
     from yaml import safe_load
     try:
