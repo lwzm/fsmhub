@@ -74,5 +74,5 @@ content-type: application/json; charset=UTF-8
 ### TODOS
 
 * [x] postgres/sqlite trigger for log changes
-* [ ] long polling
+* [x] long polling
 * [ ] docs
