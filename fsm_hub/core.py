@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
-from os import environ
 from pony import orm
 from .entities import Fsm, db
 
@@ -63,10 +62,11 @@ def info(id):
 def _init_this():
     # orm.sql_debug(True)
     from os.path import abspath
-    from yaml import safe_load
+    from os import environ
+    from json import loads
     try:
-        options = safe_load(open("database.yaml"))
-    except FileNotFoundError:
+        options = loads(environ["DB"])
+    except KeyError:
         options = {"provider": "sqlite", "filename": ":memory:"}
     fn = options.get("filename")
     if fn and fn != ":memory:":

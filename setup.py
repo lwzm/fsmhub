@@ -15,7 +15,7 @@ setup(
     keywords="fsm http web store".split(),
     packages=["fsm_hub"],
     scripts=[name, "fsm-step"],
-    install_requires="pony pyyaml falcon requests".split(),
+    install_requires="pony fastapi uvicorn".split(),
     classifiers=[
         "Environment :: Console",
         "Programming Language :: Python :: 3",
