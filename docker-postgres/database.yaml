@@ -1,5 +1,0 @@
-provider: postgres
-host: postgres
-user: postgres
-#password:
-#database:

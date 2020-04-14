@@ -1,24 +1,14 @@
-FROM alpine as base
+FROM alpine
 
 LABEL maintainer="lwzm@qq.com"
 
-WORKDIR /tmp/pip
-
-RUN apk add gcc musl-dev libev-dev postgresql-dev python3-dev \
-    && pip3 install wheel \
-    && pip3 wheel bjoern psycopg2
-
-FROM alpine
-
-COPY --from=base /tmp/pip .
-
-RUN apk add --no-cache libev libpq python3 \
-    && pip3 install --no-cache-dir  *.whl fsm-hub \
-    && rm *.whl \
+RUN apk add --no-cache libpq python3 \
+    && apk add --no-cache --virtual .build-deps gcc libc-dev make postgresql-dev python3-dev \
+    && pip3 install --no-cache-dir fsm-hub psycopg2 \
+    && apk del .build-deps \
     && find /usr/lib/ -name '*.pyc' -delete
 
-WORKDIR /home/
-ENV NOTICE="" PORT=80
+ENV PORT=80 DB='{"provider": "postgres", "host": "postgres", "user": "postgres"}'
 EXPOSE 80
 
 CMD [ "fsm-hub" ]
