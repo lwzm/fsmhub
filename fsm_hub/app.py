@@ -44,7 +44,7 @@ async def _(state: str, request: Request, wait: bool = False) -> dict:
                 future = Future()
                 waitings[state].append((future, request))
                 if await future == "disconnected":
-                    return {}  # this request has gone, return any thing has no meaning
+                    return {}  # this request has gone, return any has no meaning
                 continue
             raise HTTPException(404)
 

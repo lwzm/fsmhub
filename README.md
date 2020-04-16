@@ -9,15 +9,7 @@ pip install fsm-hub
 
 ### Start service
 ```
-python -m fsm_hub.app
-```
-or
-```
-PORT=8888 python -m fsm_hub.app
-```
-or
-```
-gunicorn fsm_hub.app
+uvicorn fsm_hub.app:app
 ```
 or
 ```
