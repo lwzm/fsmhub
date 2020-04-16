@@ -11,7 +11,7 @@ def confirm():
             from fsm_hub import core
             break
         except Exception as e:
-            print(e, file=sys.stderr, flush=True)
+            print(repr(e), file=sys.stderr, flush=True)
             time.sleep(1)
 
 
