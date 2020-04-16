@@ -8,7 +8,7 @@ RUN apk add --no-cache libpq python3 \
     && apk del .build-deps \
     && find /usr/lib/ -name '*.pyc' -delete
 
-ENV PORT=80 DB='{"provider": "postgres", "host": "postgres", "user": "postgres"}'
+ENV PORT=80 DB=postgres://postgres@postgres
 EXPOSE 80
 
 CMD [ "fsm-hub" ]

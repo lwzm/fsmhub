@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 \
     && touch db \
     && find /usr/lib/ -name '*.pyc' -delete
 
-ENV PORT=80 DB='{"provider": "sqlite", "filename": "db"}'
+ENV PORT=80 DB=sqlite://db
 EXPOSE 80
 
 CMD [ "fsm-hub" ]

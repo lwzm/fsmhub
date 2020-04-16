@@ -59,13 +59,51 @@ def info(id):
         raise NotFound(id)
 
 
+def parse_db(url):
+    """See:
+    https://docs.ponyorm.org/database.html#binding-the-database-object-to-a-specific-database
+    """
+    from urllib.parse import urlparse, unquote
+    u = urlparse(url)
+    provider = u.scheme
+    if provider == "sqlite":
+        return {
+            "provider": provider,
+            "filename": unquote(u.netloc),
+        }
+    auth, _, loc = u.netloc.rpartition("@")
+    user, _, password = map(unquote, auth.partition(":"))
+    host, _, port = map(unquote, loc.partition(":"))
+    port = port and int(port) or None
+    database = u.path.lstrip("/")
+    if provider == "postgres":
+        return {
+            "provider": provider,
+            "user": user,
+            "password": password,
+            "host": host,
+            "port": port,
+            "database": database,
+        }
+    elif provider == "mysql":
+        return {
+            "provider": provider,
+            "user": user,
+            "passwd": password,
+            "host": host,
+            "port": port,
+            "db": database,
+        }
+
+    raise ValueError(url)
+
 def _init_this():
     # orm.sql_debug(True)
     from os.path import abspath
     from os import environ
-    from json import loads
+
     try:
-        options = loads(environ["DB"])
+        options = parse_db(environ["DB"])
     except KeyError:
         options = {"provider": "sqlite", "filename": ":memory:"}
     fn = options.get("filename")
@@ -78,5 +116,8 @@ def _init_this():
 if __name__ == '__main__':
     db.bind('sqlite', filename=':memory:')
     db.generate_mapping(create_tables=True)
+    print(parse_db("sqlite://test"))
+    print(parse_db("mysql://root:password@my:3306/test"))
+    print(parse_db("postgres://postgres@postgres"))
 else:
     _init_this()
