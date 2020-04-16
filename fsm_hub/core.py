@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
-from os import environ
 from pony import orm
-from requests import Session
 from .entities import Fsm, db
 
 
-notice_base_url = environ.get("NOTICE")
 prefix_locked = "."
-_http = Session()
 
 
 class NotFound(Warning):
@@ -20,15 +16,10 @@ class NotAllowed(Warning):
     pass
 
 
-def _notice(state, id):
-    if notice_base_url:
-        _http.post(notice_base_url + state, json=id)
-
-
 def new(state, data={}):
     with orm.db_session:
         i = Fsm(state=state, data=data)
-    _notice(state, i.id)
+    return i.id
 
 
 @orm.db_session
@@ -58,7 +49,6 @@ def transit(id, state, data_patch=None):
     i.ts = datetime.now()
     if data_patch:
         i.data.update(data_patch)
-    _notice(state, i.id)
 
 
 @orm.db_session
@@ -69,13 +59,52 @@ def info(id):
         raise NotFound(id)
 
 
+def parse_db(url):
+    """See:
+    https://docs.ponyorm.org/database.html#binding-the-database-object-to-a-specific-database
+    """
+    from urllib.parse import urlparse, unquote
+    u = urlparse(url)
+    provider = u.scheme
+    if provider == "sqlite":
+        return {
+            "provider": provider,
+            "filename": unquote(u.netloc),
+        }
+    auth, _, loc = u.netloc.rpartition("@")
+    user, _, password = map(unquote, auth.partition(":"))
+    host, _, port = map(unquote, loc.partition(":"))
+    port = port and int(port) or None
+    database = u.path.lstrip("/")
+    if provider == "postgres":
+        return {
+            "provider": provider,
+            "user": user,
+            "password": password,
+            "host": host,
+            "port": port,
+            "database": database,
+        }
+    elif provider == "mysql":
+        return {
+            "provider": provider,
+            "user": user,
+            "passwd": password,
+            "host": host,
+            "port": port,
+            "db": database,
+        }
+
+    raise ValueError(url)
+
 def _init_this():
-    #orm.sql_debug(True)
+    # orm.sql_debug(True)
     from os.path import abspath
-    from yaml import safe_load
+    from os import environ
+
     try:
-        options = safe_load(open("database.yaml"))
-    except FileNotFoundError:
+        options = parse_db(environ["DB"])
+    except KeyError:
         options = {"provider": "sqlite", "filename": ":memory:"}
     fn = options.get("filename")
     if fn and fn != ":memory:":
@@ -87,5 +116,8 @@ def _init_this():
 if __name__ == '__main__':
     db.bind('sqlite', filename=':memory:')
     db.generate_mapping(create_tables=True)
+    print(parse_db("sqlite://test"))
+    print(parse_db("mysql://root:password@my:3306/test"))
+    print(parse_db("postgres://postgres@postgres"))
 else:
     _init_this()

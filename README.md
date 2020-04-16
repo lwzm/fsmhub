@@ -9,15 +9,7 @@ pip install fsm-hub
 
 ### Start service
 ```
-python -m fsm_hub.app
-```
-or
-```
-PORT=8888 python -m fsm_hub.app
-```
-or
-```
-gunicorn fsm_hub.app
+uvicorn fsm_hub.app:app
 ```
 or
 ```
@@ -63,7 +55,7 @@ content-type: application/json; charset=UTF-8
 
 
 $ http post :1024/transit/1/b
-HTTP/1.1 200 OK
+HTTP/1.1 204 No Content
 Connection: Keep-Alive
 content-length: 0
 content-type: application/json; charset=UTF-8
@@ -74,5 +66,5 @@ content-type: application/json; charset=UTF-8
 ### TODOS
 
 * [x] postgres/sqlite trigger for log changes
-* [x] optional notice
+* [x] long polling
 * [ ] docs

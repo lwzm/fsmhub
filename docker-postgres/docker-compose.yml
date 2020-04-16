@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
 
@@ -15,14 +15,12 @@ services:
     image: lwzm/fsm-hub:postgres
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./database.yaml:/home/database.yaml:ro
     environment:
-      NOTICE: http://notice/fsm/
+      DB: postgres://postgres@postgres/postgres
     ports:
       - 1024:80
     depends_on:
       - postgres
-      - notice
 
   postgrest:
     image: lwzm/postgrest
@@ -39,8 +37,3 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./postgres:/var/lib/postgresql/data
-
-  notice:
-    image: lwzm/notice
-    volumes:
-      - /etc/localtime:/etc/localtime:ro

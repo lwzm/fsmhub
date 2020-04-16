@@ -66,23 +66,6 @@ def transit(id, result):
     cli.transit(id, next_state, patch_data)
 
 
-def _generate_function_have_a_rest():
-    def have_a_rest():
-        time.sleep(3)
-
-    base = os.environ.get("NOTICE") or cli.get_config().get("notice")
-    if not base:
-        return have_a_rest
-
-    notice_url = f"{base}{module_name}"
-    logger.info(notice_url)
-
-    def have_a_rest_another():
-        cli.http.get(notice_url)
-
-    return have_a_rest_another
-
-
 def main():
     """
     """
@@ -96,13 +79,9 @@ def main():
         transit(retry_id, result)
         return
 
-    have_a_rest = _generate_function_have_a_rest()
     # loop mode
     while True:
         payload = cli.lock(module_name)
-        if not payload:
-            have_a_rest()
-            continue
         logger.debug(payload)
         id = payload["id"]
         #ts = payload["ts"]
