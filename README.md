@@ -9,7 +9,7 @@ pip install fsm-hub
 
 ### Start service
 ```
-uvicorn fsm_hub.app:app
+uvicorn fsm_hub:app
 ```
 or
 ```
@@ -18,7 +18,7 @@ fsm-hub
 
 docker
 ```
-docker run -p 1024:1024 lwzm/fsm-hub
+docker run -p 1024:80 lwzm/fsm-hub
 ```
 
 
