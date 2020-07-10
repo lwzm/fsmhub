@@ -1,5 +1,5 @@
-# fsm-hub docker image
+# fsmhub docker image
 
 ```
-docker run --rm -p 1024:1024 lwzm/fsm-hub:postgres
+docker run --rm -p 1024:80 lwzm/fsmhub:postgres
 ```

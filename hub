@@ -8,7 +8,7 @@ import time
 def confirm():
     while True:
         try:
-            from fsm_hub import core
+            from fsmhub import core
             break
         except Exception as e:
             print(repr(e), file=sys.stderr, flush=True)
@@ -18,4 +18,4 @@ def confirm():
 if __name__ == '__main__':
     confirm()
     from uvicorn import run
-    run("fsm_hub:app", host="0.0.0.0", port=int(os.environ.get("PORT", 1024)))
+    run("fsmhub:app", host="0.0.0.0", port=int(os.environ.get("PORT", 1024)))

@@ -11,8 +11,8 @@ services:
     ports:
       - 8080:80
 
-  fsm-hub:
-    image: lwzm/fsm-hub:postgres
+  fsmhub:
+    image: lwzm/fsmhub:postgres
     volumes:
       - /etc/localtime:/etc/localtime:ro
     environment:

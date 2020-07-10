@@ -18,7 +18,7 @@ import os
 import sys
 import time
 
-from fsm_hub import cli
+from fsmhub import cli
 
 try:
     from loguru import logger

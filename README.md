@@ -1,24 +1,20 @@
-# fsm-hub
+# FSMHUB
 
 Finite State Machine storage hub
 
 ### Install
 ```
-pip install fsm-hub
+pip install fsmhub
 ```
 
 ### Start service
 ```
-uvicorn fsm_hub:app
-```
-or
-```
-fsm-hub
+uvicorn fsmhub:app
 ```
 
 docker
 ```
-docker run -p 1024:80 lwzm/fsm-hub
+docker run -p 1024:80 lwzm/fsmhub
 ```
 
 
