@@ -6,7 +6,7 @@ author = "lwzm"
 
 setup(
     name="fsmhub",
-    version="4.0",
+    version="4.1",
     description="Finite State Machine storage hub",
     author=author,
     author_email="{}@qq.com".format(author),
@@ -20,3 +20,6 @@ setup(
         "Programming Language :: Python :: 3",
     ],
 )
+
+# $ ./setup.py sdist bdist_wheel
+# $ twine upload dist/fsmhub-xxx
