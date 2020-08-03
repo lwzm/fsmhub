@@ -13,6 +13,7 @@ RUN apk add --no-cache python3 \
     && apk del .build-deps \
     && pip3 uninstall -y setuptools pip uvloop \
     && touch db \
+    && echo 'pragma synchronous = off;' >~/.sqliterc \
     && cd /usr/lib/python3* \
     && python3 -OO -m compileall -q -b -f . \
     && find . -name __pycache__ | xargs rm -rf \
