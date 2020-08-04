@@ -9,7 +9,7 @@ CMD [ "uvicorn", "fsmhub:app", "--loop=asyncio", "--host=0.0.0.0", "--port=80" ]
 
 RUN apk add --no-cache python3 \
     && apk add --no-cache --virtual .build-deps gcc libc-dev make python3-dev \
-    && pip3 install --no-cache-dir fsmhub==4.3 \
+    && pip3 install --no-cache-dir fsmhub==4.4 \
     && apk del .build-deps \
     && pip3 uninstall -y setuptools pip uvloop \
     && touch db \
