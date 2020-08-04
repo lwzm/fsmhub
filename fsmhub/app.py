@@ -60,6 +60,11 @@ async def _(id: int, state: str, data: dict = {}) -> None:
         raise HTTPException(403, " -> ".join(e.args))
 
 
+@app.get("/locked-ids")
+def _() -> List[int]:
+    return core.list_locked()
+
+
 @app.get("/{id}")
 def _(id: int) -> dict:
     try:

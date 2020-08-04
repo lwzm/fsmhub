@@ -9,7 +9,7 @@ CMD [ "uvicorn", "fsmhub:app", "--loop=asyncio", "--host=0.0.0.0", "--port=80" ]
 
 RUN apk add --no-cache libpq python3 \
     && apk add --no-cache --virtual .build-deps gcc libc-dev make postgresql-dev python3-dev \
-    && pip3 install --no-cache-dir fsmhub psycopg2 \
+    && pip3 install --no-cache-dir psycopg2 fsmhub==4.3 \
     && apk del .build-deps \
     && pip3 uninstall -y setuptools pip uvloop \
     && cd /usr/lib/python3* \

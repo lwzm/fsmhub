@@ -59,6 +59,14 @@ def info(id):
         raise NotFound(id)
 
 
+@orm.db_session
+def list_locked():
+    q = orm.select(
+        (i.id, i.ts) for i in Fsm if i.state.startswith(prefix_locked)
+    ).order_by(2)
+    return [id for id, _ in q]
+
+
 def parse_db(url):
     """See:
     https://docs.ponyorm.org/database.html#binding-the-database-object-to-a-specific-database
@@ -96,6 +104,7 @@ def parse_db(url):
         }
 
     raise ValueError(url)
+
 
 def _init_this():
     # orm.sql_debug(True)
