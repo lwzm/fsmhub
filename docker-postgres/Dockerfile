@@ -14,5 +14,6 @@ RUN apk add --no-cache libpq python3 \
     && pip3 uninstall -y setuptools pip uvloop \
     && cd /usr/lib/python3* \
     && python3 -OO -m compileall -q -b -f . \
+    && rm -rf site-packages/*.*-info \
     && find . -name __pycache__ | xargs rm -rf \
     && find . -name '*.py' -delete

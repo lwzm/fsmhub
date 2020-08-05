@@ -16,5 +16,6 @@ RUN apk add --no-cache python3 \
     && echo 'pragma synchronous = off;' >~/.sqliterc \
     && cd /usr/lib/python3* \
     && python3 -OO -m compileall -q -b -f . \
+    && rm -rf site-packages/*.*-info \
     && find . -name __pycache__ | xargs rm -rf \
     && find . -name '*.py' -delete
