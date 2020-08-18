@@ -105,7 +105,7 @@ def transit(id, result):
         next_state, patch_data = result
         assert isinstance(patch_data, dict), patch_data
     logger.debug(next_state)
-    patch_data and logger.debug(patch_data)
+    logger.debug(patch_data)
     api.transit(id, next_state, patch_data)
 
 
@@ -118,7 +118,7 @@ def main():
         logger.debug(payload)
         state = payload["state"]
         assert state.endswith(module_name) and state != module_name, state
-        result = call(payload["data"] or {})
+        result = call(payload["data"])
         transit(retry_id, result)
         return
 
@@ -127,7 +127,7 @@ def main():
         payload = api.lock(module_name)
         logger.debug(payload)
         id = payload["id"]
-        kwargs = payload["data"] or {}
+        kwargs = payload["data"]
         assert payload["state"] == module_name
 
         try:
