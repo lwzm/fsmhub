@@ -92,10 +92,11 @@ def call(kwargs: dict):
     """call logic function, use magic
     """
     c = that_function.__code__
-    args = [kwargs.pop(c.co_varnames[i], None) for i in range(c.co_argcount)]
-    if len(c.co_varnames) == c.co_argcount:
-        return that_function(*args)
-    return that_function(*args, **kwargs)
+    d = that_function.__defaults__
+    argnames = c.co_varnames[:c.co_argcount]
+    defaults = dict(zip(argnames[-len(d):], d))
+    args = [kwargs.get(k, defaults.get(k)) for k in argnames]
+    return that_function(*args)
 
 
 def transit(id, result):
