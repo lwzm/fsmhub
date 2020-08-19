@@ -94,7 +94,7 @@ def call(kwargs: dict):
     c = that_function.__code__
     d = that_function.__defaults__
     argnames = c.co_varnames[:c.co_argcount]
-    defaults = dict(zip(argnames[-len(d):], d))
+    defaults = dict(zip(argnames[-len(d):], d)) if d else {}
     args = [kwargs.get(k, defaults.get(k)) for k in argnames]
     return that_function(*args)
 
