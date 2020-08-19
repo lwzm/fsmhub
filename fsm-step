@@ -19,46 +19,27 @@ import os
 import sys
 import time
 
-from http import client
-from urllib.parse import urlparse
+import requests
 
 
 class Api:
-    def __init__(self, url):
-        url = urlparse(url)
-        if url.scheme == "http":
-            self.http = client.HTTPConnection(url.netloc)
-        elif url.scheme == "https":
-            self.http = client.HTTPSConnection(url.netloc)
-        else:
-            raise ValueError(url)
+    def __init__(self, fsmhub):
+        self.fsmhub = fsmhub
+        self.http = requests.Session()
 
-    def get(self, id):
-        self.http.request("GET", f"/{id}")
-        r = self.http.getresponse()
-        if r.status > client.NO_CONTENT:
-            raise client.HTTPException(r.status)
-        return json.load(r)
+    def get(self, id) -> dict:
+        rsp = self.http.get(f"{self.fsmhub}/{id}")
+        rsp.raise_for_status()
+        return rsp.json()
 
-    def _post(self, path, data=None):
-        body = data and json.dumps(data)
-        self.http.request("POST", path, body, headers={
-                          "Content-Type": "application/json"})
-        r = self.http.getresponse()
-        if r.status > client.NO_CONTENT:
-            raise client.HTTPException(r.status)
-        o = r.read()
-        if o:
-            return json.loads(o)
-
-    def new(self, state, initial_data: dict = None):
-        return self._post(f"/new/{state}", initial_data)
-
-    def lock(self, state):
-        return self._post(f"/lock/{state}?wait=yes")
+    def lock(self, state) -> dict:
+        rsp = self.http.post(f"{self.fsmhub}/lock/{state}?wait=yes")
+        rsp.raise_for_status()
+        return rsp.json()
 
     def transit(self, id, next_state, patch_data: dict = None):
-        return self._post(f"/transit/{id}/{next_state}", patch_data)
+        rsp = self.http.post(f"{self.fsmhub}/transit/{id}/{next_state}", json=patch_data)
+        rsp.raise_for_status()
 
 
 api = Api(os.environ.get("FSMHUB") or "http://fsmhub")
