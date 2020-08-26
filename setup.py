@@ -6,7 +6,7 @@ author = "lwzm"
 
 setup(
     name="fsmhub",
-    version="4.6",
+    version="4.7",
     description="Finite State Machine storage hub",
     author=author,
     author_email="{}@qq.com".format(author),

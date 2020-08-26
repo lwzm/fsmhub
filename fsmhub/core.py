@@ -77,7 +77,8 @@ def parse_db(url):
     if provider == "sqlite":
         return {
             "provider": provider,
-            "filename": unquote(u.netloc),
+            "filename": unquote(u.netloc + u.path),
+            "create_db": True
         }
     auth, _, loc = u.netloc.rpartition("@")
     user, _, password = map(unquote, auth.partition(":"))
