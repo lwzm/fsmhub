@@ -4,6 +4,6 @@ LABEL maintainer="lwzm@qq.com"
 
 ENTRYPOINT [ "fsm-step" ]
 ENV LOGURU_LEVEL="INFO" SENTRY="" FSMHUB=""
-RUN pip3 install --no-cache-dir loguru sentry-sdk
+RUN pip3 install --no-cache-dir requests loguru sentry-sdk
 
 COPY fsm-step /bin/
