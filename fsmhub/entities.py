@@ -11,7 +11,9 @@ db = Database()
 @db.on_connect(provider="sqlite")
 def _home_sqliterc(_, conn):
     rc = Path.home() / ".sqliterc"
-    rc.exists() and conn.executescript(rc.read_text())
+    if rc.exists():
+        with rc.open() as f:
+            conn.executescript("".join(i for i in f if i[0] != "."))
 
 
 class Fsm(db.Entity):
