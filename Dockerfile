@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.13
 
 LABEL maintainer="lwzm@qq.com"
 
