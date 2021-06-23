@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
+from typing import Any, Dict, List
 from pony import orm
 from .entities import Fsm, db
 
@@ -23,7 +24,7 @@ def new(state, data={}):
 
 
 @orm.db_session
-def lock(state):
+def lock(state: str) -> Dict[str, Any]:
     if state.startswith(prefix_locked):
         raise NotAllowed(f"'{prefix_locked}*' is not allowed")
     ts = datetime.now() - timedelta(seconds=300)
@@ -39,7 +40,7 @@ def lock(state):
 
 
 @orm.db_session
-def transit(id, state, data_patch=None):
+def transit(id: int, state: str, data_patch=None):
     i = Fsm.get_for_update(id=id)
     if not i:
         raise NotFound(id)
@@ -52,7 +53,7 @@ def transit(id, state, data_patch=None):
 
 
 @orm.db_session
-def info(id):
+def info(id) -> Dict[str, Any]:
     try:
         return Fsm[id].to_dict()
     except orm.ObjectNotFound:
@@ -60,7 +61,7 @@ def info(id):
 
 
 @orm.db_session
-def list_locked():
+def list_locked() -> List[int]:
     q = orm.select(
         (i.id, i.ts) for i in Fsm if i.state.startswith(prefix_locked)
     ).order_by(2)
