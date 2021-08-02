@@ -2,11 +2,16 @@
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
+from os import getenv
+
 from pony import orm
+
 from .entities import Fsm, db
 
 
-prefix_locked = "."
+prefix_locked = getenv("FSMHUB_PREFIX_LOCKED") or "."
+ageing_seconds = timedelta(seconds=float(
+    getenv("FSMHUB_AGEING_SECONDS") or 300))
 
 JSONDict = Dict[str, Any]
 
@@ -29,7 +34,7 @@ def new(state: str, data: JSONDict = {}) -> int:
 def lock(state: str) -> JSONDict:
     if state.startswith(prefix_locked):
         raise NotAllowed(f"'{prefix_locked}*' is not allowed")
-    ts = datetime.now() - timedelta(seconds=300)
+    ts = datetime.now() - ageing_seconds
     i = orm.select(
         i for i in Fsm if i.ts > ts and i.state == state
     ).order_by(Fsm.ts).for_update(skip_locked=True).first()
