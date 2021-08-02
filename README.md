@@ -25,6 +25,9 @@ docker run -p 1024:80 lwzm/fsmhub
 * `POST /new/<STATE>`, optional json payload for init custom data
 * `POST /lock/<STATE>`
 * `POST /transit/<ID>/<NEW-STATE>`, optional json payload for patch custom data
+* `GET /list/locked`
+* `GET /list/<STATE>`
+* `GET /<ID>`
 
 ### Examples
 ```

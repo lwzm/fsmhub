@@ -61,10 +61,14 @@ async def _(id: int, state: str, data: JSONDict = {}) -> None:
         raise HTTPException(403, " -> ".join(e.args))
 
 
-@app.get("/locked-ids")
-def _() -> List[int]:
+@app.get("/list-locked")
+def _() -> List[dict]:
     return core.list_locked()
 
+
+@app.get("/list/{state}")
+def _(state: str) -> List[dict]:
+    return core.list_available(state)
 
 @app.get("/{id}")
 def _(id: int) -> JSONDict:
@@ -72,6 +76,7 @@ def _(id: int) -> JSONDict:
         return core.info(id)
     except core.NotFound:
         raise HTTPException(404)
+
 
 
 def main():
