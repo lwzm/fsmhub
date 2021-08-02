@@ -2,11 +2,15 @@
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
+from os import getenv
+
 from pony import orm
+
 from .entities import Fsm, db
 
 
-prefix_locked = "."
+prefix_locked = getenv("FSMHUB_PREFIX_LOCKED") or "."
+ageing_time = timedelta(seconds=float(getenv("FSMHUB_AGEING_SECONDS") or 300))
 
 JSONDict = Dict[str, Any]
 
@@ -28,8 +32,8 @@ def new(state: str, data: JSONDict = {}) -> int:
 @orm.db_session
 def lock(state: str) -> JSONDict:
     if state.startswith(prefix_locked):
-        raise NotAllowed(f"'{prefix_locked}*' is not allowed")
-    ts = datetime.now() - timedelta(seconds=300)
+        raise NotAllowed(f"{prefix_locked}* is not allowed: {state}")
+    ts = datetime.now() - ageing_time
     i = orm.select(
         i for i in Fsm if i.ts > ts and i.state == state
     ).order_by(Fsm.ts).for_update(skip_locked=True).first()
@@ -43,6 +47,8 @@ def lock(state: str) -> JSONDict:
 
 @orm.db_session
 def transit(id: int, state: str, data_patch: JSONDict = None):
+    if state.startswith(prefix_locked):
+        raise NotAllowed(f"{prefix_locked}* is not allowed: {state}")
     i = Fsm.get_for_update(id=id)
     if not i:
         raise NotFound(id)
@@ -63,11 +69,20 @@ def info(id) -> JSONDict:
 
 
 @orm.db_session
-def list_locked() -> List[int]:
+def list_locked() -> List[JSONDict]:
     q = orm.select(
-        (i.id, i.ts) for i in Fsm if i.state.startswith(prefix_locked)
+        (i.id, i.ts, i.state) for i in Fsm if i.state.startswith(prefix_locked)
     ).order_by(2)
-    return [id for id, _ in q]
+    return [{"id": id, "ts": ts, "state": state} for id, ts, state in q]
+
+
+@orm.db_session
+def list_available(state) -> List[JSONDict]:
+    ts = datetime.now() - ageing_time
+    q = orm.select(
+        (i.id, i.ts) for i in Fsm if i.ts > ts and i.state == state
+    ).order_by(2)
+    return [{"id": id, "ts": ts} for id, ts in q]
 
 
 def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
@@ -113,13 +128,9 @@ def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
 def _init_this():
     # orm.sql_debug(True)
     from os.path import abspath
-    from os import environ
-
-    try:
-        options = parse_db(environ["DB"])
-    except KeyError:
-        options = {"provider": "sqlite", "filename": ":memory:"}
-    fn: str = options.get("filename")
+    db_url = getenv("FSMHUB_DB_URL") or "sqlite://:memory:"
+    options = parse_db(db_url)
+    fn = options.get("filename")
     if fn and fn != ":memory:":
         options["filename"] = abspath(fn)  # $CWD/filename
     db.bind(**options)
