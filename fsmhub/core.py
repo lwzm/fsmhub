@@ -69,7 +69,7 @@ def info(id) -> JSONDict:
 
 
 @orm.db_session
-def list_locked() -> List[int]:
+def list_locked() -> List[JSONDict]:
     q = orm.select(
         (i.id, i.ts, i.state) for i in Fsm if i.state.startswith(prefix_locked)
     ).order_by(2)
@@ -77,7 +77,7 @@ def list_locked() -> List[int]:
 
 
 @orm.db_session
-def list_available(state) -> list:
+def list_available(state) -> List[JSONDict]:
     ts = datetime.now() - ageing_time
     q = orm.select(
         (i.id, i.ts) for i in Fsm if i.ts > ts and i.state == state

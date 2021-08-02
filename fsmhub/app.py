@@ -11,7 +11,8 @@ from . import core
 waitings: Dict[
     str, Deque[Tuple[Future, Request]]
 ] = defaultdict(deque)
-app = FastAPI()
+
+app: FastAPI = FastAPI()
 
 JSONDict = Dict[str, Any]
 
@@ -62,13 +63,14 @@ async def _(id: int, state: str, data: JSONDict = {}) -> None:
 
 
 @app.get("/list-locked")
-def _() -> List[dict]:
+def _() -> List[JSONDict]:
     return core.list_locked()
 
 
 @app.get("/list/{state}")
-def _(state: str) -> List[dict]:
+def _(state: str) -> List[JSONDict]:
     return core.list_available(state)
+
 
 @app.get("/{id}")
 def _(id: int) -> JSONDict:
@@ -76,7 +78,6 @@ def _(id: int) -> JSONDict:
         return core.info(id)
     except core.NotFound:
         raise HTTPException(404)
-
 
 
 def main():
