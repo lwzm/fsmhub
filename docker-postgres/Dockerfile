@@ -2,7 +2,7 @@ FROM alpine
 
 LABEL maintainer="lwzm@qq.com"
 
-ENV DB=postgres://postgres@postgres
+ENV FSMHUB_DB_URL=postgres://postgres@postgres
 EXPOSE 80
 
 CMD [ "uvicorn", "fsmhub:app", "--host=0.0.0.0", "--port=80" ]

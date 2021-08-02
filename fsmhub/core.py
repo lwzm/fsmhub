@@ -128,13 +128,9 @@ def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
 def _init_this():
     # orm.sql_debug(True)
     from os.path import abspath
-    from os import environ
-
-    try:
-        options = parse_db(environ["DB"])
-    except KeyError:
-        options = {"provider": "sqlite", "filename": ":memory:"}
-    fn: str = options.get("filename")
+    db_url = getenv("FSMHUB_DB_URL") or "sqlite://:memory:"
+    options = parse_db(db_url)
+    fn = options.get("filename")
     if fn and fn != ":memory:":
         options["filename"] = abspath(fn)  # $CWD/filename
     db.bind(**options)

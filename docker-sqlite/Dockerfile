@@ -2,7 +2,7 @@ FROM alpine
 
 LABEL maintainer="lwzm@qq.com"
 
-ENV DB=sqlite://data/db
+ENV FSMHUB_DB_URL=sqlite://data/db
 EXPOSE 80
 
 CMD [ "uvicorn", "fsmhub:app", "--host=0.0.0.0", "--port=80" ]
