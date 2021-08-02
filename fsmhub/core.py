@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Union
 from pony import orm
 from .entities import Fsm, db
 
 
 prefix_locked = "."
+
+JSONDict = Dict[str, Any]
 
 
 class NotFound(Warning):
@@ -16,14 +19,14 @@ class NotAllowed(Warning):
     pass
 
 
-def new(state, data={}):
+def new(state: str, data: JSONDict = {}) -> int:
     with orm.db_session:
         i = Fsm(state=state, data=data)
     return i.id
 
 
 @orm.db_session
-def lock(state):
+def lock(state: str) -> JSONDict:
     if state.startswith(prefix_locked):
         raise NotAllowed(f"'{prefix_locked}*' is not allowed")
     ts = datetime.now() - timedelta(seconds=300)
@@ -39,7 +42,7 @@ def lock(state):
 
 
 @orm.db_session
-def transit(id, state, data_patch=None):
+def transit(id: int, state: str, data_patch: JSONDict = None):
     i = Fsm.get_for_update(id=id)
     if not i:
         raise NotFound(id)
@@ -47,12 +50,12 @@ def transit(id, state, data_patch=None):
         raise NotAllowed(i.state, state)
     i.state = state
     i.ts = datetime.now()
-    if data_patch:
+    if data_patch is not None:
         i.data.update(data_patch)
 
 
 @orm.db_session
-def info(id):
+def info(id) -> JSONDict:
     try:
         return Fsm[id].to_dict()
     except orm.ObjectNotFound:
@@ -60,14 +63,14 @@ def info(id):
 
 
 @orm.db_session
-def list_locked():
+def list_locked() -> List[int]:
     q = orm.select(
         (i.id, i.ts) for i in Fsm if i.state.startswith(prefix_locked)
     ).order_by(2)
     return [id for id, _ in q]
 
 
-def parse_db(url):
+def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
     """See:
     https://docs.ponyorm.org/database.html#binding-the-database-object-to-a-specific-database
     """
@@ -116,7 +119,7 @@ def _init_this():
         options = parse_db(environ["DB"])
     except KeyError:
         options = {"provider": "sqlite", "filename": ":memory:"}
-    fn = options.get("filename")
+    fn: str = options.get("filename")
     if fn and fn != ":memory:":
         options["filename"] = abspath(fn)  # $CWD/filename
     db.bind(**options)

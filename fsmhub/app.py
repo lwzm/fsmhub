@@ -3,7 +3,7 @@
 import collections
 
 from asyncio import Future
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from fastapi import FastAPI, HTTPException, Request
 
@@ -12,10 +12,12 @@ from . import core
 waitings: Dict[
     str, List[Tuple[Future, Request]]
 ] = collections.defaultdict(list)
-app = FastAPI()
+app: FastAPI = FastAPI()
+
+JSONDict = Dict[str, Any]
 
 
-async def notice(token):
+async def notice(token: str) -> None:
     lst = waitings[token]
     while lst:
         future, request = lst.pop()
@@ -26,14 +28,14 @@ async def notice(token):
 
 
 @app.post("/new/{state}", status_code=201)
-async def _(state: str, data: dict = {}) -> int:
+async def _(state: str, data: JSONDict = {}) -> int:
     id = core.new(state, data)
     await notice(state)
     return id
 
 
 @app.post("/lock/{state}")
-async def _(state: str, request: Request, wait: bool = False) -> dict:
+async def _(state: str, request: Request, wait: bool = False) -> JSONDict:
     while True:
         try:
             return core.lock(state)
@@ -50,7 +52,7 @@ async def _(state: str, request: Request, wait: bool = False) -> dict:
 
 
 @app.post("/transit/{id}/{state}", status_code=204)
-async def _(id: int, state: str, data: dict = {}) -> None:
+async def _(id: int, state: str, data: JSONDict = {}) -> None:
     try:
         core.transit(id, state, data)
         await notice(state)
@@ -66,7 +68,7 @@ def _() -> List[int]:
 
 
 @app.get("/{id}")
-def _(id: int) -> dict:
+def _(id: int) -> JSONDict:
     try:
         return core.info(id)
     except core.NotFound:
