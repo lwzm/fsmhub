@@ -32,7 +32,7 @@ def new(state: str, data: JSONDict = {}) -> int:
 @orm.db_session
 def lock(state: str) -> JSONDict:
     if state.startswith(prefix_locked):
-        raise NotAllowed(f"'{prefix_locked}*' is not allowed")
+        raise NotAllowed(f"{prefix_locked}* is not allowed: {state}")
     ts = datetime.now() - ageing_time
     i = orm.select(
         i for i in Fsm if i.ts > ts and i.state == state
@@ -47,6 +47,8 @@ def lock(state: str) -> JSONDict:
 
 @orm.db_session
 def transit(id: int, state: str, data_patch: JSONDict = None):
+    if state.startswith(prefix_locked):
+        raise NotAllowed(f"{prefix_locked}* is not allowed: {state}")
     i = Fsm.get_for_update(id=id)
     if not i:
         raise NotFound(id)
