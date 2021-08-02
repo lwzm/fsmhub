@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
-import collections
-
 from asyncio import Future
-from typing import Any, Dict, List, Tuple
+from collections import defaultdict, deque
+from typing import Any, Dict, List, Tuple, Deque
 
 from fastapi import FastAPI, HTTPException, Request
 
 from . import core
 
 waitings: Dict[
-    str, List[Tuple[Future, Request]]
-] = collections.defaultdict(list)
-app: FastAPI = FastAPI()
+    str, Deque[Tuple[Future, Request]]
+] = defaultdict(deque)
+app = FastAPI()
 
 JSONDict = Dict[str, Any]
 
@@ -20,7 +19,7 @@ JSONDict = Dict[str, Any]
 async def notice(token: str) -> None:
     lst = waitings[token]
     while lst:
-        future, request = lst.pop()
+        future, request = lst.popleft()
         if not await request.is_disconnected():
             future.set_result("ok")
             break
@@ -42,13 +41,13 @@ async def _(state: str, request: Request, wait: bool = False) -> JSONDict:
         except core.NotAllowed as e:
             raise HTTPException(400, e.args[0])
         except core.NotFound:
-            if wait:
-                future = Future()
-                waitings[state].append((future, request))
-                if await future == "disconnected":
-                    return {}  # this request has gone, return any has no meaning
-                continue
-            raise HTTPException(404)
+            if not wait:
+                raise HTTPException(404, f"{state} is not found")
+            future = Future()
+            waitings[state].append((future, request))
+            if await future == "disconnected":
+                return {}  # this request has gone, return any has no meaning
+            continue
 
 
 @app.post("/transit/{id}/{state}", status_code=204)
