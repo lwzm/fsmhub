@@ -9,8 +9,7 @@ from .entities import Fsm, db
 
 
 prefix_locked = getenv("FSMHUB_PREFIX_LOCKED") or "."
-ageing_seconds = timedelta(seconds=float(
-    getenv("FSMHUB_AGEING_SECONDS") or 300))
+ageing_time = timedelta(seconds=float(getenv("FSMHUB_AGEING_SECONDS") or 300))
 
 
 class NotFound(Warning):
@@ -21,17 +20,17 @@ class NotAllowed(Warning):
     pass
 
 
-def new(state, data={}):
+def new(state, data={}) -> int:
     with orm.db_session:
         i = Fsm(state=state, data=data)
     return i.id
 
 
 @orm.db_session
-def lock(state):
+def lock(state) -> dict:
     if state.startswith(prefix_locked):
         raise NotAllowed(f"'{prefix_locked}*' is not allowed")
-    ts = datetime.now() - ageing_seconds
+    ts = datetime.now() - ageing_time
     i = orm.select(
         i for i in Fsm if i.ts > ts and i.state == state
     ).order_by(Fsm.ts).for_update(skip_locked=True).first()
@@ -67,9 +66,18 @@ def info(id):
 @orm.db_session
 def list_locked():
     q = orm.select(
-        (i.id, i.ts) for i in Fsm if i.state.startswith(prefix_locked)
+        (i.id, i.ts, i.state) for i in Fsm if i.state.startswith(prefix_locked)
     ).order_by(2)
-    return [id for id, _ in q]
+    return [{"id": id, "ts": ts, "state": state} for id, ts, state in q]
+
+
+@orm.db_session
+def list_available(state) -> list:
+    ts = datetime.now() - ageing_time
+    q = orm.select(
+        (i.id, i.ts) for i in Fsm if i.ts > ts and i.state == state
+    ).order_by(2)
+    return [{"id": id, "ts": ts} for id, ts in q]
 
 
 def parse_db(url):
