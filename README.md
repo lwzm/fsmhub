@@ -12,6 +12,11 @@ pip install fsmhub
 uvicorn fsmhub:app
 ```
 
+### Start service with postgres
+```
+FSMHUB_DB_URL=postgres://postgres:xxx@postgres.your-host uvicorn fsmhub:app
+```
+
 docker
 ```
 docker run -p 1024:80 lwzm/fsmhub

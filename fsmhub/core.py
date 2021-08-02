@@ -125,12 +125,9 @@ def parse_db(url):
 def _init_this():
     # orm.sql_debug(True)
     from os.path import abspath
-    from os import environ
+    db_url = getenv("FSMHUB_DB_URL") or "sqlite://:memory:"
 
-    try:
-        options = parse_db(environ["DB"])
-    except KeyError:
-        options = {"provider": "sqlite", "filename": ":memory:"}
+    options = parse_db(db_url)
     fn = options.get("filename")
     if fn and fn != ":memory:":
         options["filename"] = abspath(fn)  # $CWD/filename
