@@ -52,15 +52,6 @@ try:
 except ImportError:
     import logging as logger
 
-sentry_sdk = None
-_sentry_dsn = os.getenv("SENTRY")
-if _sentry_dsn:
-    try:
-        import sentry_sdk
-        sentry_sdk.init(dsn=_sentry_dsn)
-    except ImportError:
-        logger.warning("*sentry-sdk* is not installed")
-
 
 sys.path.append("")
 module_name = sys.argv[1]
@@ -118,7 +109,6 @@ def main():
             result = call(kwargs)
         except Exception as e:
             logger.exception(f"{module_name}.main")
-            sentry_sdk and sentry_sdk.capture_exception(e)
             continue
 
         transit(id, result)
