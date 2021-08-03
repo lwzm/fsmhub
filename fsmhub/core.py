@@ -89,13 +89,17 @@ def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
     """See:
     https://docs.ponyorm.org/database.html#binding-the-database-object-to-a-specific-database
     """
+    from os.path import abspath
     from urllib.parse import urlparse, unquote
     u = urlparse(url)
     provider = u.scheme
     if provider == "sqlite":
+        filename = unquote(u.netloc + u.path)
+        if filename != ":memory:":
+            filename = abspath(filename)  # $CWD/filename
         return {
             "provider": provider,
-            "filename": unquote(u.netloc + u.path),
+            "filename": filename,
             "create_db": True
         }
     auth, _, loc = u.netloc.rpartition("@")
@@ -127,12 +131,8 @@ def parse_db(url: str) -> Dict[str, Union[str, int, None]]:
 
 def _init_this():
     # orm.sql_debug(True)
-    from os.path import abspath
-    db_url = getenv("FSMHUB_DB_URL") or "sqlite://:memory:"
+    db_url = getenv("FSMHUB_DB_URL") or "sqlite://fsmhub.db"
     options = parse_db(db_url)
-    fn = options.get("filename")
-    if fn and fn != ":memory:":
-        options["filename"] = abspath(fn)  # $CWD/filename
     db.bind(**options)
     db.generate_mapping(create_tables=True)
 
