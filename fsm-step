@@ -14,26 +14,28 @@ OR
 """
 
 import importlib
-import json
 import os
 import sys
-import time
 
-import requests
+from requests import Session, ReadTimeout
+from tenacity import retry, retry_if_exception_type
 
 
 class Api:
     def __init__(self, fsmhub):
+        if fsmhub.partition("://")[0] not in ("http", "https"):
+            fsmhub = "http://" + fsmhub
         self.fsmhub = fsmhub
-        self.http = requests.Session()
+        self.http = Session()
 
     def get(self, id) -> dict:
         rsp = self.http.get(f"{self.fsmhub}/{id}")
         rsp.raise_for_status()
         return rsp.json()
 
+    @retry(retry=retry_if_exception_type(ReadTimeout))
     def lock(self, state) -> dict:
-        rsp = self.http.post(f"{self.fsmhub}/lock/{state}?wait=yes")
+        rsp = self.http.post(f"{self.fsmhub}/lock/{state}?wait=yes", timeout=60)
         rsp.raise_for_status()
         return rsp.json()
 
@@ -42,22 +44,13 @@ class Api:
         rsp.raise_for_status()
 
 
-api = Api(os.environ.get("FSMHUB") or "http://fsmhub")
+api = Api(os.getenv("FSMHUB") or "fsmhub")
 
 
 try:
     from loguru import logger
 except ImportError:
     import logging as logger
-
-sentry_sdk = None
-_sentry_dsn = os.environ.get("SENTRY")
-if _sentry_dsn:
-    try:
-        import sentry_sdk
-        sentry_sdk.init(dsn=_sentry_dsn)
-    except ImportError:
-        logger.warning("*sentry-sdk* is not installed")
 
 
 sys.path.append("")
@@ -116,7 +109,6 @@ def main():
             result = call(kwargs)
         except Exception as e:
             logger.exception(f"{module_name}.main")
-            sentry_sdk and sentry_sdk.capture_exception(e)
             continue
 
         transit(id, result)
