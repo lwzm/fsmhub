@@ -16,6 +16,7 @@ OR
 import importlib
 import os
 import sys
+import traceback
 
 from requests import Session, ReadTimeout
 from tenacity import retry, retry_if_exception_type
@@ -106,12 +107,12 @@ def main():
         assert payload["state"] == module_name
 
         try:
-            result = call(kwargs)
+            transit(id, call(kwargs))
         except Exception as e:
+            if not __debug__:
+                api.transit(id, "python.exception", {"traceback": traceback.format_exc()})
             logger.exception(f"{module_name}.main")
-            continue
 
-        transit(id, result)
 
 
 if __name__ == '__main__':
