@@ -14,6 +14,7 @@ OR
 """
 
 import importlib
+import multiprocessing
 import os
 import sys
 import traceback
@@ -60,16 +61,15 @@ if module_name.endswith(".py"):
     module_name = module_name[:-3].replace("/", ".")
 
 # you MUST define the function *main*
-that_function = importlib.import_module(module_name).main
 
 
-def call(kwargs: dict):
-    """call logic function, use magic
-    """
+def call(**kwargs):
+    """call logic function, use magic"""
+    that_function = importlib.import_module(module_name).main
     c = that_function.__code__
     d = that_function.__defaults__
-    argnames = c.co_varnames[:c.co_argcount]
-    defaults = dict(zip(argnames[-len(d):], d)) if d else {}
+    argnames = c.co_varnames[: c.co_argcount]
+    defaults = dict(zip(argnames[-len(d) :], d)) if d else {}
     args = [kwargs.get(k, defaults.get(k)) for k in argnames]
     return that_function(*args)
 
@@ -99,6 +99,10 @@ def main():
         return
 
     # loop mode
+
+    multiprocessing.set_start_method("spawn")
+    pool = multiprocessing.Pool(1, maxtasksperchild=1)
+
     while True:
         payload = api.lock(module_name)
         logger.debug(payload)
@@ -107,13 +111,13 @@ def main():
         assert payload["state"] == module_name
 
         try:
-            transit(id, call(kwargs))
-        except Exception as e:
-            if not __debug__:
-                api.transit(id, "python.exception", {"traceback": traceback.format_exc()})
+            result = pool.apply(call, kwds=kwargs)
+        except Exception:
             logger.exception(f"{module_name}.main")
+            result = "python.exception", {"traceback": traceback.format_exc()}
+
+        transit(id, result)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
