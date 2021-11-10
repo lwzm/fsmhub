@@ -4,7 +4,7 @@ from asyncio import Future
 from collections import defaultdict, deque
 from typing import Any, Dict, List, Tuple, Deque
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 
 from . import core
 
@@ -51,7 +51,7 @@ async def _(state: str, request: Request, wait: bool = False) -> JSONDict:
             continue
 
 
-@app.post("/transit/{id}/{state}", status_code=204)
+@app.post("/transit/{id}/{state}", status_code=204, response_class=Response)
 async def _(id: int, state: str, data: JSONDict = {}) -> None:
     try:
         core.transit(id, state, data)
