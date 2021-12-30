@@ -101,7 +101,6 @@ def main():
     # loop mode
 
     multiprocessing.set_start_method("spawn")
-    pool = multiprocessing.Pool(1, maxtasksperchild=1)
 
     while True:
         payload = api.lock(module_name)
@@ -111,7 +110,10 @@ def main():
         assert payload["state"] == module_name
 
         try:
+            pool = multiprocessing.Pool(1)
             result = pool.apply(call, kwds=kwargs)
+            pool.terminate()
+            pool.join()
         except Exception:
             logger.exception(f"{module_name}.main")
             result = "python.exception", {"traceback": traceback.format_exc()}
