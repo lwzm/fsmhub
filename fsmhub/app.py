@@ -51,7 +51,7 @@ async def _(state: str, request: Request, wait: bool = False) -> JSONDict:
             continue
 
 
-@app.post("/transit/{id}/{state}", status_code=204, response_class=Response)
+@app.post("/transit/{id}/{state}", status_code=204)
 async def _(id: int, state: str, data: JSONDict = {}) -> None:
     try:
         core.transit(id, state, data)
